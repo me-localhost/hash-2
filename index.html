@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hash Engine</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f3f4f6;
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* ── Container ────────────────────────────────────────── */
+    .container {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    /* ── Header ───────────────────────────────────────────── */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* ── Form ─────────────────────────────────────────────── */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+    }
+
+    .input-wrapper input {
+      flex: 1;
+      background: #f9fafb;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      padding: 10px 40px 10px 12px;
+      color: #111827;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .input-wrapper input:focus {
+      border-color: #9ca3af;
+    }
+
+    .toggle-visibility {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+      opacity: 0.4;
+      transition: opacity 0.15s;
+    }
+
+    .toggle-visibility:hover {
+      opacity: 0.8;
+    }
+
+    /* ── Pepper Action ────────────────────────────────────── */
+    .pepper-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+
+    .action-btn-small {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .action-btn-small:hover {
+      background: #e5e7eb;
+    }
+
+    /* ── Checkbox ─────────────────────────────────────────── */
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      accent-color: #374151;
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+
+    .checkbox-group .checkbox-label {
+      font-size: 12px;
+      color: #374151;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    /* ── Entropy Bar ──────────────────────────────────────── */
+    .entropy-bar-wrapper {
+      margin-bottom: 16px;
+    }
+
+    .entropy-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .entropy-bar-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    #entropyLabel {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: color 0.4s ease;
+    }
+
+    .entropy-track {
+      width: 100%;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    #entropyFill {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      background: #10b981;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s ease;
+    }
+
+    /* ── Button GO ────────────────────────────────────────── */
+    .generate-btn {
+      width: 100%;
+      background: #111827;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .generate-btn:hover:not(:disabled) {
+      background: #1f2937;
+    }
+
+    .generate-btn:disabled {
+      background: #e5e7eb;
+      color: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .generate-btn.success {
+      background: #111827;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    .footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .footer p {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Hash Engine</h1>
+    <p>Local cryptographic hash computation utility</p>
+  </div>
+
+  <!-- Input String -->
+  <div class="form-group">
+    <label for="userInput">Input String</label>
+    <div class="input-wrapper">
+      <input
+              type="password"
+              id="userInput"
+              placeholder="Enter input string"
+              autocomplete="off"
+              spellcheck="false"
+      >
+      <button type="button" id="toggleInputVisibility" class="toggle-visibility" title="Show">👁️</button>
+    </div>
+  </div>
+
+  <!-- Salt -->
+  <div class="form-group">
+    <label for="saltInput">Salt</label>
+    <div class="input-wrapper">
+      <input
+              type="password"
+              id="saltInput"
+              placeholder="Enter salt value"
+              autocomplete="off"
+              spellcheck="false"
+      >
+      <button type="button" id="toggleSaltVisibility" class="toggle-visibility" title="Show">👁️</button>
+    </div>
+  </div>
+
+  <!-- Secret Key (Pepper) -->
+  <div class="form-group">
+    <label for="pepperInput">Secret Key</label>
+    <div class="input-wrapper">
+      <input
+              type="password"
+              id="pepperInput"
+              placeholder="Enter secret key"
+              autocomplete="off"
+              spellcheck="false"
+      >
+      <button type="button" id="togglePepperVisibility" class="toggle-visibility" title="Show">👁️</button>
+    </div>
+    <div class="pepper-actions">
+      <button type="button" id="generatePepperBtn" class="action-btn-small">Generate Key</button>
+    </div>
+  </div>
+
+  <!-- Special Chars Toggle -->
+  <label class="checkbox-group">
+    <input type="checkbox" id="specialCharsToggle" checked>
+    <span class="checkbox-label">Include special characters</span>
+  </label>
+
+  <!-- Entropy Bar -->
+  <div id="entropyBar" class="entropy-bar-wrapper hidden">
+    <div class="entropy-bar-header">
+      <span class="entropy-bar-title">Hash Strength</span>
+      <span id="entropyLabel"></span>
+    </div>
+    <div class="entropy-track">
+      <div id="entropyFill"></div>
+    </div>
+  </div>
+
+  <!-- GO Button -->
+  <button id="generateButton" class="generate-btn" disabled>
+    <div id="loadingSpinner" class="spinner hidden"></div>
+    <span id="btnText">GO</span>
+  </button>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>All computation is local. Output is sent directly to clipboard.</p>
+  </div>
+
+</div>
+
+<script src="crypto.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
